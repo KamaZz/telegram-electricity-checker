@@ -1,0 +1,4 @@
+.env
+.idea
+last_power_state.txt
+last_power_outage.txt
