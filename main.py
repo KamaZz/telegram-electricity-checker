@@ -12,8 +12,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Check all variables are set
-if not os.getenv("HOSTS") or not os.getenv("GENERATOR_PORT") or not os.getenv("CHAT_IDS") or not os.getenv("TELEGRAM_KEY"):
-    print("Please set the HOSTS, GENERATOR_PORT, CHAT_IDS and TELEGRAM_KEY environment variables.")
+if not os.getenv("HOSTS") or not os.getenv("CHECK_GENERATOR_STATE") or not os.getenv("GENERATOR_PORT") or not os.getenv("CHAT_IDS") or not os.getenv("TELEGRAM_KEY"):
+    print("Please set the HOSTS, CHECK_GENERATOR_STATE, GENERATOR_PORT, CHAT_IDS and TELEGRAM_KEY environment "
+          "variables.")
     exit(1)
 
 if not os.getenv("DRY_RUN", "False") == "True":
@@ -256,14 +257,20 @@ if last_state():
         send_electricity_status_message()
 
     if current_state.value >= electricity_states.unknown_electricity_source.value:
-        if check_generator_state():
-            if current_state != electricity_states.generator:
-                save_power_state(electricity_states.generator)
+        if os.getenv("CHECK_GENERATOR_STATE") == "True":
+            if check_generator_state():
+                if current_state != electricity_states.generator:
+                    save_power_state(electricity_states.generator)
+                    send_electricity_status_message()
+            elif current_state != electricity_states.city_electricity:
+                save_power_state(electricity_states.city_electricity)
                 send_electricity_status_message()
-        elif current_state != electricity_states.city_electricity:
-            save_power_state(electricity_states.city_electricity)
-            send_electricity_status_message()
-            os.remove("last_power_outage.txt")
+                os.remove("last_power_outage.txt")
+        else:
+            if current_state != electricity_states.unknown_electricity_source:
+                save_power_state(electricity_states.unknown_electricity_source)
+                send_electricity_status_message()
+                os.remove("last_power_outage.txt")
 else:
     if current_state != electricity_states.no_electricity:
         save_power_state(electricity_states.no_electricity)
