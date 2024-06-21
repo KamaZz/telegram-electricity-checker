@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Check all variables are set
-if not os.getenv("HOSTS") or not os.getenv("CHECK_GENERATOR_STATE") or not os.getenv("GENERATOR_PORT") or not os.getenv("CHAT_IDS") or not os.getenv("TELEGRAM_KEY"):
-    print("Please set the HOSTS, CHECK_GENERATOR_STATE, GENERATOR_PORT, CHAT_IDS and TELEGRAM_KEY environment "
+if not os.getenv("HOSTS") or not os.getenv("CHECK_GENERATOR_STATE") or not os.getenv("IS_SCHEDULE_ENABLED") or not os.getenv("GENERATOR_PORT") or not os.getenv("CHAT_IDS") or not os.getenv("TELEGRAM_KEY"):
+    print("Please set the HOSTS, CHECK_GENERATOR_STATE, IS_SCHEDULE_ENABLED, GENERATOR_PORT, CHAT_IDS and TELEGRAM_KEY environment "
           "variables.")
     exit(1)
 
@@ -151,6 +151,9 @@ def get_swear_messages_uk():
 
 # Get a message about the schedule
 def schedule_message(locale):
+    if os.getenv("IS_SCHEDULE_ENABLED") == "False":
+        return ""
+
     if int(time.strftime("%H").lstrip("0")) in shutdown_times:
         u = int(time.strftime("%H").lstrip("0")) + 4
         if u > 23:
